@@ -25,11 +25,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       checkerboardRasterCacheImages: true,
-      title: 'Human vs Ai',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-      ),
-      home: const MyHomePage(title: 'Human vs Ai'),
+      title: 'Beautiful Wallpapers',
+      theme: ThemeData(brightness: Brightness.dark, useMaterial3: true),
+      home: const MyHomePage(title: 'Beautiful Wallpapers'),
     );
   }
 }
@@ -43,7 +41,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-// class _MyAppState extends State<MyApp> {
   int indexImage = 0;
   String _wallpaperUrlHome = 'Unknown';
   String _wallpaperUrlLock = 'Unknown';
@@ -63,7 +60,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> setWallpaperHome(int index) async {
     setState(() {
-      imageGalry(context, index);
       indexImage = index;
       url = '${imageListLink[indexImage]}grid_0.png';
       _wallpaperUrlHome = 'Loading';
@@ -83,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (!mounted) return;
-
+    print(result);
     setState(() {
       _wallpaperUrlHome = result;
     });
@@ -116,7 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  imageGalry(context, int index) {
+  imageGalry(BuildContext context, index) {
     return Scaffold(
         body: Container(
             margin: const EdgeInsets.only(top: 20),
@@ -125,41 +121,52 @@ class _MyHomePageState extends State<MyHomePage> {
             child: SingleChildScrollView(
               child: SizedBox(
                   height: MediaQuery.of(context).size.height,
-                  child: Column(
+                  child: Stack(
                     children: [
                       Hero(
                         tag: imageListLink[indexImage],
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(25),
-                          child: Image.network(
-                              '${imageListLink[indexImage]}grid_0_640_N.webp',
+                          child: CachedNetworkImage(
+                              imageUrl:
+                                  '${imageListLink[indexImage]}grid_0_640_N.webp',
                               width: MediaQuery.of(context).size.width,
-                              height: 400,
-                              fit: BoxFit.cover),
+                              height: MediaQuery.of(context).size.height,
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error)),
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          setWallpaperHome(index);
-                        },
-                        child: _wallpaperUrlHome == 'Loading'
-                            ? const CircularProgressIndicator()
-                            : const Text('Set wallpaper from Url home'),
-                      ),
-                      Center(
-                        child: Text('Wallpaper status: $_wallpaperUrlHome\n'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          setWallpaperLock(index);
-                        },
-                        child: _wallpaperUrlLock == 'Loading'
-                            ? const CircularProgressIndicator()
-                            : const Text('Set wallpaper from Url lock'),
-                      ),
-                      Center(
-                        child: Text('Wallpaper status: $_wallpaperUrlLock\n'),
-                      ),
+                      Column(
+                          verticalDirection: VerticalDirection.up,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(
+                                top: 50,
+                                left: 50.0,
+                              ),
+                            ),
+                            Row(children: [
+                              ElevatedButton(
+                                onPressed: () async {
+                                  HapticFeedback.mediumImpact();
+                                  setWallpaperHome(index);
+                                },
+                                child: _wallpaperUrlHome == 'Loading'
+                                    ? const CircularProgressIndicator()
+                                    : const Icon(Icons.fit_screen),
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  HapticFeedback.mediumImpact();
+                                  setWallpaperLock(index);
+                                },
+                                child: _wallpaperUrlLock == 'Loading'
+                                    ? const CircularProgressIndicator()
+                                    : const Icon(Icons.screen_lock_landscape),
+                              ),
+                            ])
+                          ])
                     ],
                   )),
             )));
@@ -172,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (context, index) {
           indexImage = index;
           return Padding(
-              padding: const EdgeInsets.only(left: 5, right: 5, top: 20),
+              padding: const EdgeInsets.only(top: 20),
               child: Card(
                   child: Column(children: <Widget>[
                 GestureDetector(
@@ -182,10 +189,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           Navigator.push(
                               context,
                               CupertinoPageRoute(
-                                  builder: (context) => imageGalry(
-                                        context,
-                                        index,
-                                      )))
+                                  builder: (context) =>
+                                      imageGalry(context, index)))
                         },
                     child: SizedBox(
                         child: Stack(
@@ -193,14 +198,37 @@ class _MyHomePageState extends State<MyHomePage> {
                         Hero(
                           tag: imageListLink[indexImage],
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(25),
-                            child: Image.network(
-                                '${imageListLink[indexImage]}grid_0_640_N.webp',
+                              borderRadius: BorderRadius.circular(25),
+                              child: CachedNetworkImage(
+                                imageUrl:
+                                    '${imageListLink[indexImage]}grid_0_640_N.webp',
                                 width: MediaQuery.of(context).size.width,
                                 height: 400,
-                                fit: BoxFit.cover),
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
+                              )),
+                        ),
+                        Row(children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              HapticFeedback.mediumImpact();
+                              setWallpaperHome(index);
+                            },
+                            child: _wallpaperUrlHome == 'Loading'
+                                ? const CircularProgressIndicator()
+                                : const Icon(Icons.fit_screen),
                           ),
-                        )
+                          ElevatedButton(
+                            onPressed: () async {
+                              HapticFeedback.mediumImpact();
+                              setWallpaperLock(index);
+                            },
+                            child: _wallpaperUrlLock == 'Loading'
+                                ? const CircularProgressIndicator()
+                                : const Icon(Icons.screen_lock_landscape),
+                          ),
+                        ])
                       ],
                     ))),
               ])));
