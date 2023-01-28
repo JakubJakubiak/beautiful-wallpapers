@@ -6,8 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:async_wallpaper/async_wallpaper.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import './image/imageListLink.dart';
+// import 'package:gallery_saver/gallery_saver.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,11 +59,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> initPlatformState() async {}
-
+  @override
   Future<void> setWallpaperHome(int index) async {
     setState(() {
       indexImage = index;
       url = '${imageListLink[indexImage]}grid_0.png';
+
       _wallpaperUrlHome = 'Loading';
     });
     String result;
@@ -79,8 +82,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (!mounted) return;
-    print(result);
+
     setState(() {
+      _wallpaperUrlHome;
       _wallpaperUrlHome = result;
     });
   }
@@ -108,11 +112,12 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!mounted) return;
 
     setState(() {
+      _wallpaperUrlLock;
       _wallpaperUrlLock = result;
     });
   }
 
-  imageGalry(BuildContext context, index) {
+  imageGalry(context, index) {
     return Scaffold(
         body: Container(
             margin: const EdgeInsets.only(top: 20),
@@ -142,29 +147,42 @@ class _MyHomePageState extends State<MyHomePage> {
                           children: [
                             const Padding(
                               padding: EdgeInsets.only(
-                                top: 50,
+                                top: 50.0,
                                 left: 50.0,
                               ),
                             ),
                             Row(children: [
-                              ElevatedButton(
-                                onPressed: () async {
-                                  HapticFeedback.mediumImpact();
-                                  setWallpaperHome(index);
-                                },
-                                child: _wallpaperUrlHome == 'Loading'
-                                    ? const CircularProgressIndicator()
-                                    : const Icon(Icons.fit_screen),
-                              ),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  HapticFeedback.mediumImpact();
-                                  setWallpaperLock(index);
-                                },
-                                child: _wallpaperUrlLock == 'Loading'
-                                    ? const CircularProgressIndicator()
-                                    : const Icon(Icons.screen_lock_landscape),
-                              ),
+                              _wallpaperUrlLock != 'Loading'
+                                  ? ElevatedButton(
+                                      onPressed: () async {
+                                        HapticFeedback.mediumImpact();
+                                        setWallpaperHome(index);
+                                        setState(() {
+                                          _wallpaperUrlLock;
+                                        });
+                                      },
+                                      child: const Icon(
+                                        Icons.fit_screen,
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                        size: 40,
+                                      ),
+                                    )
+                                  : const CircularProgressIndicator(),
+                              _wallpaperUrlLock != 'Loading'
+                                  ? ElevatedButton(
+                                      onPressed: () async {
+                                        HapticFeedback.mediumImpact();
+                                        setWallpaperLock(index);
+                                      },
+                                      child: const Icon(
+                                        Icons.screen_lock_landscape,
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                        size: 40,
+                                      ),
+                                    )
+                                  : const CircularProgressIndicator(),
                             ])
                           ])
                     ],
@@ -210,24 +228,31 @@ class _MyHomePageState extends State<MyHomePage> {
                               )),
                         ),
                         Row(children: [
+                          _wallpaperUrlHome != 'Loading'
+                              ? ElevatedButton(
+                                  onPressed: () async {
+                                    HapticFeedback.mediumImpact();
+                                    setWallpaperHome(index);
+                                  },
+                                  child: const Icon(Icons.fit_screen),
+                                )
+                              : const CircularProgressIndicator(),
+                          _wallpaperUrlLock != 'Loading'
+                              ? ElevatedButton(
+                                  onPressed: () async {
+                                    HapticFeedback.mediumImpact();
+                                    setWallpaperLock(index);
+                                  },
+                                  child:
+                                      const Icon(Icons.screen_lock_landscape),
+                                )
+                              : const CircularProgressIndicator(),
                           ElevatedButton(
                             onPressed: () async {
                               HapticFeedback.mediumImpact();
-                              setWallpaperHome(index);
                             },
-                            child: _wallpaperUrlHome == 'Loading'
-                                ? const CircularProgressIndicator()
-                                : const Icon(Icons.fit_screen),
-                          ),
-                          ElevatedButton(
-                            onPressed: () async {
-                              HapticFeedback.mediumImpact();
-                              setWallpaperLock(index);
-                            },
-                            child: _wallpaperUrlLock == 'Loading'
-                                ? const CircularProgressIndicator()
-                                : const Icon(Icons.screen_lock_landscape),
-                          ),
+                            child: const Icon(Icons.save),
+                          )
                         ])
                       ],
                     ))),
