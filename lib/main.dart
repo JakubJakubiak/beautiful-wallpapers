@@ -10,6 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import './image/imageListLink.dart';
 
+import 'package:beautifulwallpapers/script/scrol.dart';
+import 'package:beautifulwallpapers/script/favorite.dart';
+import 'package:beautifulwallpapers/script/favorites.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
@@ -42,270 +46,44 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int indexImage = 0;
-  String _wallpaperUrlHome = 'Unknown';
-  String _wallpaperUrlLock = 'Unknown';
-  String url = '';
-
-  late bool goToHome;
-  late SharedPreferences prefs;
-  List<String> _favorites = [];
-
   @override
   void initState() {
     super.initState();
-    goToHome = false;
-    initPlatformState();
-    _getFavorites();
   }
 
-  Future<void> initPlatformState() async {
-    prefs = await SharedPreferences.getInstance();
-  }
+  int _selectedIndex = 0;
+  static const TextStyle optionStyle =
+      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+  static const List<Widget> _widgetOptions = <Widget>[
+    Scrol(),
+    Favorites(),
+  ];
 
-  Future<void> _addToFavorites(String item) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> items = prefs.getStringList('favorites') ?? [];
-    items.add(item);
-    prefs.setStringList('favorites', items);
-
+  void _onItemTapped(int index) {
     setState(() {
-      _favorites = Set<String>.from(_favorites..add(item)).toList();
+      _selectedIndex = index;
     });
-  }
-
-  Future<void> _getFavorites() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final List<String> items = prefs.getStringList('favorites') ?? [];
-
-    setState(() {
-      _favorites = items;
-    });
-  }
-
-  void removeFromFavorites(String item) async {
-    setState(() {
-      _favorites.remove(item);
-    });
-  }
-
-  @override
-  Future<void> setWallpaperHome(int index) async {
-    setState(() {
-      indexImage = index;
-      url = '${imageListLink[indexImage]}grid_0.png';
-
-      _wallpaperUrlHome = 'Loading';
-    });
-    String result;
-
-    try {
-      result = await AsyncWallpaper.setWallpaper(
-        url: url,
-        wallpaperLocation: AsyncWallpaper.HOME_SCREEN,
-        goToHome: goToHome,
-      )
-          ? 'Wallpaper set'
-          : 'Failed to get wallpaper.';
-    } on PlatformException {
-      result = 'Failed to get wallpaper.';
-    }
-
-    if (!mounted) return;
-
-    setState(() {
-      _wallpaperUrlHome = result;
-    });
-  }
-
-  Future<void> setWallpaperLock(index) async {
-    setState(() {
-      indexImage = index;
-      url = '${imageListLink[indexImage]}grid_0.png';
-      _wallpaperUrlLock = 'Loading';
-    });
-    String result;
-
-    try {
-      result = await AsyncWallpaper.setWallpaper(
-        url: url,
-        wallpaperLocation: AsyncWallpaper.LOCK_SCREEN,
-        goToHome: goToHome,
-      )
-          ? 'Wallpaper set'
-          : 'Failed to get wallpaper.';
-    } on PlatformException {
-      result = 'Failed to get wallpaper.';
-    }
-
-    if (!mounted) return;
-
-    setState(() {
-      _wallpaperUrlLock = result;
-    });
-  }
-
-  imageGalry(context, index) {
-    String action;
-
-    prefs.getStringList('items');
-    final List<String>? itemsList = prefs.getStringList('items');
-    print(itemsList);
-
-    return Scaffold(
-      body: Container(
-          margin: const EdgeInsets.only(top: 20),
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          child: SingleChildScrollView(
-            child: SizedBox(
-                height: MediaQuery.of(context).size.height,
-                child: Stack(
-                  children: [
-                    Hero(
-                      tag: imageListLink[indexImage],
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(25),
-                        child: CachedNetworkImage(
-                            imageUrl:
-                                '${imageListLink[indexImage]}grid_0_640_N.webp',
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height,
-                            fit: BoxFit.cover,
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.error)),
-                      ),
-                    ),
-                    Column(verticalDirection: VerticalDirection.up, children: [
-                      const Padding(
-                        padding: EdgeInsets.only(
-                          top: 50.0,
-                          left: 50.0,
-                        ),
-                      ),
-                      Text('$prefs'),
-                      Row(children: [
-                        _wallpaperUrlLock != 'Loading'
-                            ? ElevatedButton(
-                                onPressed: () async {
-                                  HapticFeedback.mediumImpact();
-                                  setWallpaperHome(index);
-                                },
-                                child: const Icon(
-                                  Icons.fit_screen,
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                  size: 40,
-                                ),
-                              )
-                            : const CircularProgressIndicator(),
-                        _wallpaperUrlLock != 'Loading'
-                            ? ElevatedButton(
-                                onPressed: () async {
-                                  HapticFeedback.mediumImpact();
-                                  setWallpaperLock(index);
-                                },
-                                child: const Icon(
-                                  Icons.screen_lock_landscape,
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                  size: 40,
-                                ),
-                              )
-                            : const CircularProgressIndicator(),
-                        _favorites.any((element) =>
-                                element == imageListLink[indexImage])
-                            ? GestureDetector(
-                                onTap: () async {
-                                  HapticFeedback.mediumImpact();
-                                  removeFromFavorites(
-                                      imageListLink[indexImage]);
-                                },
-                                child: const Icon(
-                                  Icons.favorite,
-                                  size: 40,
-                                  color: Color.fromARGB(255, 217, 17, 17),
-                                ),
-                              )
-                            : GestureDetector(
-                                onTap: () async {
-                                  HapticFeedback.mediumImpact();
-                                  _addToFavorites(imageListLink[indexImage]);
-                                },
-                                child: const Icon(
-                                  Icons.favorite_border,
-                                  size: 40,
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                ),
-                              ),
-                      ])
-                    ])
-                  ],
-                )),
-          )),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-        itemCount: imageListLink.length,
-        itemBuilder: (context, index) {
-          indexImage = index;
-          return Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Card(
-                  child: Column(children: <Widget>[
-                GestureDetector(
-                    onTap: () => {
-                          HapticFeedback.mediumImpact(),
-                          indexImage = index,
-                          url = '${imageListLink[indexImage]}grid_0_640_N.webp',
-                          Navigator.push(
-                              context,
-                              CupertinoPageRoute(
-                                  builder: (context) =>
-                                      imageGalry(context, index)))
-                        },
-                    child: SizedBox(
-                        child: Stack(
-                      children: <Widget>[
-                        Hero(
-                          tag: imageListLink[indexImage],
-                          child: ClipRRect(
-                              borderRadius: BorderRadius.circular(25),
-                              child: CachedNetworkImage(
-                                imageUrl:
-                                    '${imageListLink[indexImage]}grid_0_640_N.webp',
-                                width: MediaQuery.of(context).size.width,
-                                height: 400,
-                                fit: BoxFit.cover,
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
-                              )),
-                        ),
-                        Row(children: [
-                          _wallpaperUrlHome != 'Loading' && indexImage == index
-                              ? ElevatedButton(
-                                  onPressed: () async {
-                                    HapticFeedback.mediumImpact();
-                                    setWallpaperHome(index);
-                                  },
-                                  child: const Icon(Icons.fit_screen),
-                                )
-                              : const CircularProgressIndicator(),
-                          _wallpaperUrlLock != 'Loading'
-                              ? ElevatedButton(
-                                  onPressed: () async {
-                                    HapticFeedback.mediumImpact();
-                                    setWallpaperLock(index);
-                                  },
-                                  child:
-                                      const Icon(Icons.screen_lock_landscape),
-                                )
-                              : const CircularProgressIndicator(),
-                        ])
-                      ],
-                    ))),
-              ])));
-        });
+    return Scaffold(
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_border),
+            label: 'Favorite',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
+      body: _widgetOptions[_selectedIndex],
+    );
   }
 }
