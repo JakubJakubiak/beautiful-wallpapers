@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +30,7 @@ class _ChooseLocationState extends State<Scrol> {
 
   late bool goToHome;
   late SharedPreferences prefs;
-  List<String> _favorites = [];
+  List<dynamic> _favorites = [];
 
   @override
   void initState() {
@@ -42,22 +44,9 @@ class _ChooseLocationState extends State<Scrol> {
     prefs = await SharedPreferences.getInstance();
   }
 
-  Future<void> _addToFavorites(String item) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> items = prefs.getStringList('favorites') ?? [];
-    items.add(item);
-    items.toSet().toList();
-    prefs.setStringList('favorites', items);
-
-    setState(() {
-      // _favorites = Set<String>.from(_favorites..add(item)).toList();
-      _favorites = items;
-    });
-  }
-
   Future<void> _getFavorites() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final List<String> items = prefs.getStringList('favorites') ?? [];
+    List<String> items = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getStringList('favorites') ?? []);
 
     setState(() {
       _favorites = items;
@@ -65,13 +54,24 @@ class _ChooseLocationState extends State<Scrol> {
   }
 
   void removeFromFavorites(String item) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final List<String> items = prefs.getStringList('favorites') ?? [];
-    items.remove(item);
+    List<String> favorites = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getStringList('favorites') ?? []);
 
-    setState(() {
-      _favorites = items;
-    });
+    List favoriteItems = favorites.map((f) => json.decode(f)).toList();
+
+    int index = favoriteItems
+        .indexWhere((f) => f['link'] == item && f['id'] == indexImage);
+    if (index != -1) {
+      favoriteItems.removeAt(index);
+
+      favorites = favoriteItems.map((f) => json.encode(f)).toList();
+      await SharedPreferences.getInstance()
+          .then((prefs) => prefs.setStringList('favorites', favorites));
+
+      setState(() {
+        _favorites = favoriteItems;
+      });
+    }
   }
 
   Future<void> setWallpaperHome(int index) async {
@@ -131,7 +131,15 @@ class _ChooseLocationState extends State<Scrol> {
 
   @override
   Widget build(BuildContext context) {
-    print(_favorites.length);
+    // if (_favorites.isNotEmpty) {
+    //   Map<String, dynamic> item = json.decode(_favorites[2]);
+    //   int id = item['id'];
+    //   String link = item['link'];
+
+    //   print(id);
+    //   print(link);
+    // }
+
     return Scaffold(
         body: SizedBox(
       height: MediaQuery.of(context).size.height,
@@ -154,8 +162,10 @@ class _ChooseLocationState extends State<Scrol> {
                               Navigator.push(
                                   context,
                                   CupertinoPageRoute(
-                                      builder: (context) =>
-                                          Favorite(context, indexImage)))
+                                      builder: (context) => Favorite(
+                                            context,
+                                            indexImage,
+                                          )))
                             },
                         child: SizedBox(
                             child: Stack(
@@ -180,7 +190,6 @@ class _ChooseLocationState extends State<Scrol> {
                                       onPressed: () async {
                                         HapticFeedback.mediumImpact();
                                         setWallpaperHome(index);
-                                        print(index);
                                       },
                                       child: const Icon(Icons.fit_screen),
                                     )

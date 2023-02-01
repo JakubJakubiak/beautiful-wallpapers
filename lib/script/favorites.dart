@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:async_wallpaper/async_wallpaper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,7 +22,7 @@ class Favorites extends StatefulWidget {
 }
 
 class _ChooseLocationState extends State<Favorites> {
-  List<String> _favorites = [];
+  List<dynamic> _favorites = [];
   int indexImage = 0;
   String url = '';
 
@@ -84,30 +86,36 @@ class _ChooseLocationState extends State<Favorites> {
     });
   }
 
-  Future<void> _addToFavorites(String item) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> items = prefs.getStringList('favorites') ?? [];
-    items.add(item);
-    items.toSet().toList();
-    prefs.setStringList('favorites', items);
+  Future<void> _addToFavorites(String item, int indexImage) async {
+    List<String> favorites = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getStringList('favorites') ?? []);
+
+    List favoriteItems = favorites.map((f) => json.decode(f)).toList();
+
+    Map<String, dynamic> newItem = {'id': indexImage, 'link': item};
+    bool exists =
+        favoriteItems.any((f) => f['id'] == indexImage && f['link'] == item);
+
+    if (!exists) {
+      favoriteItems.add(newItem);
+
+      favorites = favoriteItems.map((f) => json.encode(f)).toList();
+      await SharedPreferences.getInstance()
+          .then((prefs) => prefs.setStringList('favorites', favorites));
+    }
 
     setState(() {
-      _favorites = Set<String>.from(_favorites..add(item)).toList();
-      // _favorites = items;
+      _favorites = favoriteItems;
+      print(_favorites);
     });
   }
 
   Future<void> dedsetWallpaperLock(int item) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> items = prefs.getStringList('favorites') ?? [];
-    // items.add(item);
-    // items.toSet().toList();
-    prefs.setStringList('favorites', items);
-    items.clear();
+    await SharedPreferences.getInstance()
+        .then((prefs) => prefs.remove('favorites'));
 
     setState(() {
-      // _favorites.clear();
-      _favorites = items;
+      _favorites = [];
     });
   }
 
@@ -140,6 +148,9 @@ class _ChooseLocationState extends State<Favorites> {
 
   @override
   Widget build(BuildContext context) {
+    // print(imageListLink[indexImage]);
+    // print(_favorites[index]);
+    // print(imageListLink[indexImage] == _favorites[index]);
     return Scaffold(
         body: SizedBox(
             height: MediaQuery.of(context).size.height,
@@ -148,6 +159,20 @@ class _ChooseLocationState extends State<Favorites> {
                   itemCount: _favorites.length,
                   itemBuilder: (context, index) {
                     int indexImage = index;
+                    String link = '';
+
+                    if (_favorites.isNotEmpty) {
+                      Map<String, dynamic> item =
+                          json.decode(_favorites[index]);
+                      indexImage = item['id'];
+                      link = item['link'];
+                    }
+
+                    // int indexImage = item['id'];
+                    // print(imageListLink[indexImage]);
+                    // print(_favorites[index]);
+                    // print(imageListLink[indexImage] == _favorites[index]);
+
                     return Padding(
                       padding:
                           const EdgeInsets.only(left: 5, right: 5, top: 20),
@@ -167,7 +192,7 @@ class _ChooseLocationState extends State<Favorites> {
                                   Hero(
                                     tag: imageListLink[indexImage],
                                     child: Image.network(
-                                        '${_favorites[index]}grid_0_640_N.webp',
+                                        '${link}grid_0_640_N.webp',
                                         width:
                                             MediaQuery.of(context).size.width,
                                         fit: BoxFit.cover),

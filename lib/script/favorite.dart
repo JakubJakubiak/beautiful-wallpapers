@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:async_wallpaper/async_wallpaper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,8 +18,6 @@ class Favorite extends StatefulWidget {
   final BuildContext context;
   final int indexImage;
 
-// _ChooseLocationState({this.indexImage});
-  // const Favorite(BuildContext context, int indexImage, {super.key});
   Favorite(
     this.context,
     this.indexImage,
@@ -28,9 +28,10 @@ class Favorite extends StatefulWidget {
 }
 
 class _ChooseLocationState extends State<Favorite> {
-  List<String> _favorites = [];
+  List<dynamic> _favorites = [];
 
   int indexImage = 0;
+
   _ChooseLocationState({required this.indexImage});
   String url = '';
 
@@ -57,12 +58,47 @@ class _ChooseLocationState extends State<Favorite> {
   }
 
   void removeFromFavorites(String item) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final List<String> items = prefs.getStringList('favorites') ?? [];
-    items.remove(item);
+    List<String> favorites = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getStringList('favorites') ?? []);
+
+    List favoriteItems = favorites.map((f) => json.decode(f)).toList();
+
+    int index = favoriteItems
+        .indexWhere((f) => f['link'] == item && f['id'] == indexImage);
+    if (index != -1) {
+      favoriteItems.removeAt(index);
+
+      favorites = favoriteItems.map((f) => json.encode(f)).toList();
+      await SharedPreferences.getInstance()
+          .then((prefs) => prefs.setStringList('favorites', favorites));
+
+      setState(() {
+        _favorites = favoriteItems;
+      });
+    }
+  }
+
+  Future<void> _addToFavorites(String item, int indexImage) async {
+    List<String> favorites = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getStringList('favorites') ?? []);
+
+    List favoriteItems = favorites.map((f) => json.decode(f)).toList();
+
+    Map<String, dynamic> newItem = {'id': indexImage, 'link': item};
+    bool exists =
+        favoriteItems.any((f) => f['id'] == indexImage && f['link'] == item);
+
+    if (!exists) {
+      favoriteItems.add(newItem);
+
+      favorites = favoriteItems.map((f) => json.encode(f)).toList();
+      await SharedPreferences.getInstance()
+          .then((prefs) => prefs.setStringList('favorites', favorites));
+    }
 
     setState(() {
-      _favorites = items;
+      _favorites = favoriteItems;
+      print(_favorites);
     });
   }
 
@@ -94,19 +130,6 @@ class _ChooseLocationState extends State<Favorite> {
     });
   }
 
-  Future<void> _addToFavorites(String item) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> items = prefs.getStringList('favorites') ?? [];
-    items.add(item);
-    items.toSet().toList();
-    prefs.setStringList('favorites', items);
-
-    setState(() {
-      // _favorites = Set<String>.from(_favorites..add(item)).toList();
-      _favorites = items;
-    });
-  }
-
   Future<void> setWallpaperLock(index) async {
     setState(() {
       indexImage = index;
@@ -134,16 +157,36 @@ class _ChooseLocationState extends State<Favorite> {
     });
   }
 
+  Future<void> deleteetWallpaperLock(int index) async {
+    await SharedPreferences.getInstance()
+        .then((prefs) => prefs.remove('favorites'));
+
+    setState(() {
+      _favorites = [];
+    });
+  }
+
+  bool isInFavoritess = false;
+  Future<void> ToFavoritestest() async {
+    List<String> favorites = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getStringList('favorites') ?? []);
+
+    List favoriteItems = favorites.map((f) => json.decode(f)).toList();
+    bool isInFavorites =
+        favoriteItems.any((f) => f['link'] == imageListLink[indexImage]);
+    setState(() {
+      isInFavoritess = isInFavorites;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    ToFavoritestest();
+
     return Scaffold(
         body: SizedBox(
       height: MediaQuery.of(context).size.height,
       child: Stack(children: <Widget>[
-        // HomePageBackground(
-        //   screenHeight: MediaQuery.of(context).size.height,
-        // ),
-        // imageGalry(context, int indexImage) {
         Scaffold(
             body: Container(
                 margin: const EdgeInsets.only(top: 20),
@@ -206,8 +249,7 @@ class _ChooseLocationState extends State<Favorite> {
                                           ),
                                         )
                                       : const CircularProgressIndicator(),
-                                  _favorites.any((element) =>
-                                          element == imageListLink[indexImage])
+                                  isInFavoritess
                                       ? GestureDetector(
                                           onTap: () async {
                                             HapticFeedback.mediumImpact();
@@ -225,7 +267,8 @@ class _ChooseLocationState extends State<Favorite> {
                                           onTap: () async {
                                             HapticFeedback.mediumImpact();
                                             await _addToFavorites(
-                                                imageListLink[indexImage]);
+                                                imageListLink[indexImage],
+                                                indexImage);
                                           },
                                           child: const Icon(
                                             Icons.favorite_border,
@@ -234,6 +277,13 @@ class _ChooseLocationState extends State<Favorite> {
                                                 255, 255, 255, 255),
                                           ),
                                         ),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      HapticFeedback.mediumImpact();
+                                      deleteetWallpaperLock(indexImage);
+                                    },
+                                    child: const Icon(Icons.deblur),
+                                  )
                                 ])
                               ])
                         ],
