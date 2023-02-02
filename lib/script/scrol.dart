@@ -161,7 +161,11 @@ class _ChooseLocationState extends State<Scrol> {
                                         HapticFeedback.mediumImpact();
                                         setWallpaperHome(index);
                                       },
-                                      child: const Icon(Icons.fit_screen),
+                                      child: const Icon(
+                                        Icons.fit_screen,
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                      ),
                                     )
                                   : const CircularProgressIndicator(),
                               _wallpaperUrlLock != 'Loading'
@@ -171,7 +175,10 @@ class _ChooseLocationState extends State<Scrol> {
                                         setWallpaperLock(index);
                                       },
                                       child: const Icon(
-                                          Icons.screen_lock_landscape),
+                                        Icons.screen_lock_landscape,
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                      ),
                                     )
                                   : const CircularProgressIndicator(),
                             ])

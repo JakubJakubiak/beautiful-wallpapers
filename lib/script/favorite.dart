@@ -11,7 +11,8 @@ import 'package:beautifulwallpapers/script/scrol.dart';
 
 import '../main.dart';
 import 'Scrol.dart';
-import 'allscript.dart';
+import 'allscripts.dart';
+import 'package:beautifulwallpapers/script/allscripts.dart';
 
 export 'package:beautifulwallpapers/script/favorite.dart';
 
@@ -84,7 +85,6 @@ class _ChooseLocationState extends State<Favorite> {
 
     setState(() {
       _favorites = favoriteItems;
-      print(_favorites);
     });
   }
 
@@ -142,15 +142,6 @@ class _ChooseLocationState extends State<Favorite> {
       _wallpaperUrlLock = result;
     });
   }
-
-  // Future<void> deleteetWallpaperLock(int index) async {
-  //   await SharedPreferences.getInstance()
-  //       .then((prefs) => prefs.remove('favorites'));
-
-  //   setState(() {
-  //     _favorites = [];
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -240,22 +231,9 @@ class _ChooseLocationState extends State<Favorite> {
                                       : GestureDetector(
                                           onTap: () async {
                                             HapticFeedback.mediumImpact();
-
-                                            // await Utils.
                                             _addToFavorites(
                                                 imageListLink[indexImage],
                                                 indexImage);
-
-                                            // _addToFavorites() async {
-                                            //   List favorites =
-                                            //       await Utils.addToFavorites(
-                                            //           imageListLink[indexImage],
-                                            //           indexImage);
-                                            //   setState(() {
-                                            //     _favorites = favorites;
-                                            //     print(_favorites);
-                                            //   });
-                                            // }
                                           },
                                           child: const Icon(
                                             Icons.favorite_border,

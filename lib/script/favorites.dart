@@ -165,11 +165,19 @@ class _ChooseLocationState extends State<Favorites> {
                                 child: Stack(children: <Widget>[
                                   Hero(
                                     tag: imageListLink[indexImage],
-                                    child: Image.network(
-                                        '${link}grid_0_640_N.webp',
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        fit: BoxFit.cover),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: CachedNetworkImage(
+                                          imageUrl: '${link}grid_0_640_N.webp',
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          height: MediaQuery.of(context)
+                                              .size
+                                              .height,
+                                          fit: BoxFit.cover,
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(Icons.error)),
+                                    ),
                                   ),
                                   const Padding(
                                     padding: EdgeInsets.only(top: 120),
@@ -181,7 +189,11 @@ class _ChooseLocationState extends State<Favorites> {
                                               HapticFeedback.mediumImpact();
                                               setWallpaperHome(index);
                                             },
-                                            child: const Icon(Icons.fit_screen),
+                                            child: const Icon(
+                                              Icons.fit_screen,
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
+                                            ),
                                           )
                                         : const CircularProgressIndicator(),
                                     _wallpaperUrlLock != 'Loading'
@@ -191,7 +203,10 @@ class _ChooseLocationState extends State<Favorites> {
                                               setWallpaperLock(index);
                                             },
                                             child: const Icon(
-                                                Icons.screen_lock_landscape),
+                                              Icons.screen_lock_landscape,
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
+                                            ),
                                           )
                                         : const CircularProgressIndicator(),
                                   ])

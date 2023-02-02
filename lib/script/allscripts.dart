@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+export 'package:beautifulwallpapers/script/allscripts.dart';
 
 class Utils {
   static void removeFromFavorites(String item, int indexImage) async {
