@@ -60,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   void _onItemTapped(int index) {
+    HapticFeedback.mediumImpact();
     setState(() {
       _selectedIndex = index;
     });
