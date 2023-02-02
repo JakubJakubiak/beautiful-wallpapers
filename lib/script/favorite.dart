@@ -11,6 +11,7 @@ import 'package:beautifulwallpapers/script/scrol.dart';
 
 import '../main.dart';
 import 'Scrol.dart';
+import 'allscript.dart';
 
 export 'package:beautifulwallpapers/script/favorite.dart';
 
@@ -37,6 +38,7 @@ class _ChooseLocationState extends State<Favorite> {
 
   String _wallpaperUrlHome = 'Unknown';
   String _wallpaperUrlLock = 'Unknown';
+  bool isInFavoritess = false;
 
   late bool goToHome;
   late SharedPreferences prefs;
@@ -49,33 +51,17 @@ class _ChooseLocationState extends State<Favorite> {
   }
 
   Future<void> _getFavorites() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final List<String> items = prefs.getStringList('favorites') ?? [];
-
-    setState(() {
-      _favorites = items;
-    });
-  }
-
-  void removeFromFavorites(String item) async {
     List<String> favorites = await SharedPreferences.getInstance()
         .then((prefs) => prefs.getStringList('favorites') ?? []);
 
     List favoriteItems = favorites.map((f) => json.decode(f)).toList();
+    bool isInFavorites =
+        favoriteItems.any((f) => f['link'] == imageListLink[indexImage]);
 
-    int index = favoriteItems
-        .indexWhere((f) => f['link'] == item && f['id'] == indexImage);
-    if (index != -1) {
-      favoriteItems.removeAt(index);
-
-      favorites = favoriteItems.map((f) => json.encode(f)).toList();
-      await SharedPreferences.getInstance()
-          .then((prefs) => prefs.setStringList('favorites', favorites));
-
-      setState(() {
-        _favorites = favoriteItems;
-      });
-    }
+    setState(() {
+      _favorites = favoriteItems;
+      isInFavoritess = isInFavorites;
+    });
   }
 
   Future<void> _addToFavorites(String item, int indexImage) async {
@@ -157,31 +143,18 @@ class _ChooseLocationState extends State<Favorite> {
     });
   }
 
-  Future<void> deleteetWallpaperLock(int index) async {
-    await SharedPreferences.getInstance()
-        .then((prefs) => prefs.remove('favorites'));
+  // Future<void> deleteetWallpaperLock(int index) async {
+  //   await SharedPreferences.getInstance()
+  //       .then((prefs) => prefs.remove('favorites'));
 
-    setState(() {
-      _favorites = [];
-    });
-  }
-
-  bool isInFavoritess = false;
-  Future<void> ToFavoritestest() async {
-    List<String> favorites = await SharedPreferences.getInstance()
-        .then((prefs) => prefs.getStringList('favorites') ?? []);
-
-    List favoriteItems = favorites.map((f) => json.decode(f)).toList();
-    bool isInFavorites =
-        favoriteItems.any((f) => f['link'] == imageListLink[indexImage]);
-    setState(() {
-      isInFavoritess = isInFavorites;
-    });
-  }
+  //   setState(() {
+  //     _favorites = [];
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
-    ToFavoritestest();
+    _getFavorites();
 
     return Scaffold(
         body: SizedBox(
@@ -253,8 +226,9 @@ class _ChooseLocationState extends State<Favorite> {
                                       ? GestureDetector(
                                           onTap: () async {
                                             HapticFeedback.mediumImpact();
-                                            removeFromFavorites(
-                                                imageListLink[indexImage]);
+                                            Utils.removeFromFavorites(
+                                                imageListLink[indexImage],
+                                                indexImage);
                                           },
                                           child: const Icon(
                                             Icons.favorite,
@@ -266,9 +240,22 @@ class _ChooseLocationState extends State<Favorite> {
                                       : GestureDetector(
                                           onTap: () async {
                                             HapticFeedback.mediumImpact();
-                                            await _addToFavorites(
+
+                                            // await Utils.
+                                            _addToFavorites(
                                                 imageListLink[indexImage],
                                                 indexImage);
+
+                                            // _addToFavorites() async {
+                                            //   List favorites =
+                                            //       await Utils.addToFavorites(
+                                            //           imageListLink[indexImage],
+                                            //           indexImage);
+                                            //   setState(() {
+                                            //     _favorites = favorites;
+                                            //     print(_favorites);
+                                            //   });
+                                            // }
                                           },
                                           child: const Icon(
                                             Icons.favorite_border,
@@ -277,13 +264,6 @@ class _ChooseLocationState extends State<Favorite> {
                                                 255, 255, 255, 255),
                                           ),
                                         ),
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      HapticFeedback.mediumImpact();
-                                      deleteetWallpaperLock(indexImage);
-                                    },
-                                    child: const Icon(Icons.deblur),
-                                  )
                                 ])
                               ])
                         ],

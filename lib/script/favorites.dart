@@ -35,6 +35,7 @@ class _ChooseLocationState extends State<Favorites> {
   @override
   void initState() {
     super.initState();
+    goToHome = false;
     indexImage;
     _getFavorites();
   }
@@ -42,16 +43,6 @@ class _ChooseLocationState extends State<Favorites> {
   Future<void> _getFavorites() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final List<String> items = prefs.getStringList('favorites') ?? [];
-
-    setState(() {
-      _favorites = items;
-    });
-  }
-
-  void removeFromFavorites(String item) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final List<String> items = prefs.getStringList('favorites') ?? [];
-    items.remove(item);
 
     setState(() {
       _favorites = items;
@@ -110,15 +101,6 @@ class _ChooseLocationState extends State<Favorites> {
     });
   }
 
-  Future<void> dedsetWallpaperLock(int item) async {
-    await SharedPreferences.getInstance()
-        .then((prefs) => prefs.remove('favorites'));
-
-    setState(() {
-      _favorites = [];
-    });
-  }
-
   Future<void> setWallpaperLock(index) async {
     setState(() {
       indexImage = index;
@@ -148,9 +130,6 @@ class _ChooseLocationState extends State<Favorites> {
 
   @override
   Widget build(BuildContext context) {
-    // print(imageListLink[indexImage]);
-    // print(_favorites[index]);
-    // print(imageListLink[indexImage] == _favorites[index]);
     return Scaffold(
         body: SizedBox(
             height: MediaQuery.of(context).size.height,
@@ -167,19 +146,14 @@ class _ChooseLocationState extends State<Favorites> {
                       indexImage = item['id'];
                       link = item['link'];
                     }
-
-                    // int indexImage = item['id'];
-                    // print(imageListLink[indexImage]);
-                    // print(_favorites[index]);
-                    // print(imageListLink[indexImage] == _favorites[index]);
-
                     return Padding(
                       padding:
                           const EdgeInsets.only(left: 5, right: 5, top: 20),
                       child: Card(
                           child: Column(children: <Widget>[
                         GestureDetector(
-                            onTap: () => {
+                            onTap: () async => {
+                                  HapticFeedback.mediumImpact(),
                                   Navigator.push(
                                       context,
                                       CupertinoPageRoute(
@@ -201,8 +175,7 @@ class _ChooseLocationState extends State<Favorites> {
                                     padding: EdgeInsets.only(top: 120),
                                   ),
                                   Row(children: [
-                                    _wallpaperUrlHome != 'Loading' &&
-                                            indexImage == index
+                                    _wallpaperUrlHome != 'Loading'
                                         ? ElevatedButton(
                                             onPressed: () async {
                                               HapticFeedback.mediumImpact();
@@ -221,13 +194,6 @@ class _ChooseLocationState extends State<Favorites> {
                                                 Icons.screen_lock_landscape),
                                           )
                                         : const CircularProgressIndicator(),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        HapticFeedback.mediumImpact();
-                                        dedsetWallpaperLock(index);
-                                      },
-                                      child: const Icon(Icons.deblur),
-                                    )
                                   ])
                                 ]))),
                       ])),

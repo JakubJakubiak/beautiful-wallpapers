@@ -53,27 +53,6 @@ class _ChooseLocationState extends State<Scrol> {
     });
   }
 
-  void removeFromFavorites(String item) async {
-    List<String> favorites = await SharedPreferences.getInstance()
-        .then((prefs) => prefs.getStringList('favorites') ?? []);
-
-    List favoriteItems = favorites.map((f) => json.decode(f)).toList();
-
-    int index = favoriteItems
-        .indexWhere((f) => f['link'] == item && f['id'] == indexImage);
-    if (index != -1) {
-      favoriteItems.removeAt(index);
-
-      favorites = favoriteItems.map((f) => json.encode(f)).toList();
-      await SharedPreferences.getInstance()
-          .then((prefs) => prefs.setStringList('favorites', favorites));
-
-      setState(() {
-        _favorites = favoriteItems;
-      });
-    }
-  }
-
   Future<void> setWallpaperHome(int index) async {
     setState(() {
       indexImage = index;
@@ -131,15 +110,6 @@ class _ChooseLocationState extends State<Scrol> {
 
   @override
   Widget build(BuildContext context) {
-    // if (_favorites.isNotEmpty) {
-    //   Map<String, dynamic> item = json.decode(_favorites[2]);
-    //   int id = item['id'];
-    //   String link = item['link'];
-
-    //   print(id);
-    //   print(link);
-    // }
-
     return Scaffold(
         body: SizedBox(
       height: MediaQuery.of(context).size.height,
