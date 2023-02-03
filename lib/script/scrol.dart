@@ -46,10 +46,8 @@ class _ChooseLocationState extends State<Scrol> {
       }
       _controller.addListener(() {
         final offset = _controller.offset;
-        print("offset: $offset");
       });
     });
-
     initPlatformState();
     _getFavorites();
   }
@@ -143,11 +141,12 @@ class _ChooseLocationState extends State<Scrol> {
           height: MediaQuery.of(context).size.height,
           child: Stack(children: <Widget>[
             ListView.builder(
-                itemCount: imageListLink.length,
                 controller: _controller,
+                itemCount: imageListLink.length,
                 itemBuilder: (context, index) {
-                  int indexImage = index;
                   position();
+                  int indexImage = index;
+
                   return Padding(
                       padding: const EdgeInsets.only(top: 20),
                       child: Card(
