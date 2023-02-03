@@ -49,9 +49,8 @@ class _ChooseLocationState extends State<Favorites> {
     });
   }
 
-  Future<void> setWallpaperHome(int index) async {
+  Future<void> setWallpaperHome(int indexImage) async {
     setState(() {
-      indexImage = index;
       url = '${imageListLink[indexImage]}grid_0.png';
 
       _wallpaperUrlHome = 'Loading';
@@ -101,9 +100,8 @@ class _ChooseLocationState extends State<Favorites> {
     });
   }
 
-  Future<void> setWallpaperLock(index) async {
+  Future<void> setWallpaperLock(int indexImage) async {
     setState(() {
-      indexImage = index;
       url = '${imageListLink[indexImage]}grid_0.png';
       _wallpaperUrlLock = 'Loading';
     });
@@ -187,7 +185,7 @@ class _ChooseLocationState extends State<Favorites> {
                                         ? ElevatedButton(
                                             onPressed: () async {
                                               HapticFeedback.mediumImpact();
-                                              setWallpaperHome(index);
+                                              setWallpaperHome(indexImage);
                                             },
                                             child: const Icon(
                                               Icons.fit_screen,
@@ -200,7 +198,7 @@ class _ChooseLocationState extends State<Favorites> {
                                         ? ElevatedButton(
                                             onPressed: () async {
                                               HapticFeedback.mediumImpact();
-                                              setWallpaperLock(index);
+                                              setWallpaperLock(indexImage);
                                             },
                                             child: const Icon(
                                               Icons.screen_lock_landscape,

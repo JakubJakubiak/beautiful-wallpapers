@@ -25,6 +25,9 @@ class _ChooseLocationState extends State<Scrol> {
   String url = '';
   int indexImage = 0;
 
+  final ScrollController _controller = ScrollController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   String _wallpaperUrlHome = 'Unknown';
   String _wallpaperUrlLock = 'Unknown';
 
@@ -36,8 +39,25 @@ class _ChooseLocationState extends State<Scrol> {
   void initState() {
     super.initState();
     goToHome = false;
+    SharedPreferences.getInstance().then((prefs) {
+      final position = prefs.getDouble("scroll_position");
+      if (position != null) {
+        _controller.jumpTo(position);
+      }
+      _controller.addListener(() {
+        final offset = _controller.offset;
+        print("offset: $offset");
+      });
+    });
+
     initPlatformState();
     _getFavorites();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> initPlatformState() async {
@@ -108,85 +128,95 @@ class _ChooseLocationState extends State<Scrol> {
     });
   }
 
+  Future<void> position() async {
+    final position = _controller.offset;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setDouble("scroll_position", position);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
         body: SizedBox(
-      height: MediaQuery.of(context).size.height,
-      child: Stack(children: <Widget>[
-        ListView.builder(
-            itemCount: imageListLink.length,
-            itemBuilder: (context, index) {
-              int indexImage = index;
-
-              return Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Card(
-                      child: Column(children: <Widget>[
-                    GestureDetector(
-                        onTap: () => {
-                              HapticFeedback.mediumImpact(),
-                              indexImage = index,
-                              url =
-                                  '${imageListLink[indexImage]}grid_0_640_N.webp',
-                              Navigator.push(
-                                  context,
-                                  CupertinoPageRoute(
-                                      builder: (context) => Favorite(
-                                            context,
-                                            indexImage,
-                                          )))
-                            },
-                        child: SizedBox(
-                            child: Stack(
-                          children: <Widget>[
-                            Hero(
-                              tag: imageListLink[indexImage],
-                              child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(25),
-                                  child: CachedNetworkImage(
-                                    imageUrl:
-                                        '${imageListLink[indexImage]}grid_0_640_N.webp',
-                                    width: MediaQuery.of(context).size.width,
-                                    height: 400,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(Icons.error),
-                                  )),
-                            ),
-                            Row(children: [
-                              _wallpaperUrlHome != 'Loading'
-                                  ? ElevatedButton(
-                                      onPressed: () async {
-                                        HapticFeedback.mediumImpact();
-                                        setWallpaperHome(index);
-                                      },
-                                      child: const Icon(
-                                        Icons.fit_screen,
-                                        color:
-                                            Color.fromARGB(255, 255, 255, 255),
-                                      ),
-                                    )
-                                  : const CircularProgressIndicator(),
-                              _wallpaperUrlLock != 'Loading'
-                                  ? ElevatedButton(
-                                      onPressed: () async {
-                                        HapticFeedback.mediumImpact();
-                                        setWallpaperLock(index);
-                                      },
-                                      child: const Icon(
-                                        Icons.screen_lock_landscape,
-                                        color:
-                                            Color.fromARGB(255, 255, 255, 255),
-                                      ),
-                                    )
-                                  : const CircularProgressIndicator(),
-                            ])
-                          ],
-                        ))),
-                  ])));
-            })
-      ]),
-    ));
+          height: MediaQuery.of(context).size.height,
+          child: Stack(children: <Widget>[
+            ListView.builder(
+                itemCount: imageListLink.length,
+                controller: _controller,
+                itemBuilder: (context, index) {
+                  int indexImage = index;
+                  position();
+                  return Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: Card(
+                          child: Column(children: <Widget>[
+                        GestureDetector(
+                            onTap: () => {
+                                  HapticFeedback.mediumImpact(),
+                                  indexImage = index,
+                                  url =
+                                      '${imageListLink[indexImage]}grid_0_640_N.webp',
+                                  Navigator.push(
+                                      context,
+                                      CupertinoPageRoute(
+                                          builder: (context) => Favorite(
+                                                context,
+                                                indexImage,
+                                              )))
+                                },
+                            child: SizedBox(
+                                child: Stack(
+                              children: <Widget>[
+                                Hero(
+                                  tag: imageListLink[indexImage],
+                                  child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: CachedNetworkImage(
+                                        imageUrl:
+                                            '${imageListLink[indexImage]}grid_0_640_N.webp',
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        height: 400,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.error),
+                                      )),
+                                ),
+                                Row(children: [
+                                  _wallpaperUrlHome != 'Loading'
+                                      ? ElevatedButton(
+                                          onPressed: () async {
+                                            HapticFeedback.mediumImpact();
+                                            setWallpaperHome(index);
+                                          },
+                                          child: const Icon(
+                                            Icons.fit_screen,
+                                            color: Color.fromARGB(
+                                                255, 255, 255, 255),
+                                          ),
+                                        )
+                                      : const CircularProgressIndicator(),
+                                  _wallpaperUrlLock != 'Loading'
+                                      ? ElevatedButton(
+                                          onPressed: () async {
+                                            HapticFeedback.mediumImpact();
+                                            setWallpaperLock(index);
+                                          },
+                                          child: const Icon(
+                                            Icons.screen_lock_landscape,
+                                            color: Color.fromARGB(
+                                                255, 255, 255, 255),
+                                          ),
+                                        )
+                                      : const CircularProgressIndicator(),
+                                ])
+                              ],
+                            ))),
+                      ])));
+                })
+          ]),
+        ));
   }
 }
