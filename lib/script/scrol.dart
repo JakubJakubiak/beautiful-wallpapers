@@ -39,15 +39,7 @@ class _ChooseLocationState extends State<Scrol> {
   void initState() {
     super.initState();
     goToHome = false;
-    SharedPreferences.getInstance().then((prefs) {
-      final position = prefs.getDouble("scroll_position");
-      if (position != null) {
-        _controller.jumpTo(position);
-      }
-      _controller.addListener(() {
-        final offset = _controller.offset;
-      });
-    });
+
     initPlatformState();
     _getFavorites();
   }
@@ -126,13 +118,6 @@ class _ChooseLocationState extends State<Scrol> {
     });
   }
 
-  Future<void> position() async {
-    final position = _controller.offset;
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setDouble("scroll_position", position);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,7 +129,6 @@ class _ChooseLocationState extends State<Scrol> {
                 controller: _controller,
                 itemCount: imageListLink.length,
                 itemBuilder: (context, index) {
-                  position();
                   int indexImage = index;
 
                   return Padding(
