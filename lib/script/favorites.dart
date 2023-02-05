@@ -136,7 +136,6 @@ class _ChooseLocationState extends State<Favorites> {
                   itemBuilder: (context, index) {
                     int indexImage = index;
                     String link = '';
-                    print(_favorites);
                     if (_favorites.isNotEmpty) {
                       Map<String, dynamic> item =
                           json.decode(_favorites[index]);

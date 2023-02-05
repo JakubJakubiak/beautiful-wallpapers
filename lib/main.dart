@@ -29,7 +29,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      checkerboardRasterCacheImages: true,
       title: 'Beautiful Wallpapers',
       theme: ThemeData(brightness: Brightness.dark, useMaterial3: true),
       home: const MyHomePage(title: 'Beautiful Wallpapers'),
