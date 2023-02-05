@@ -55,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) async {
     HapticFeedback.mediumImpact();
     setState(() {
       _selectedIndex = index;
@@ -82,9 +82,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: IndexedStack(
           index: _selectedIndex,
-          children: const [
-            Scrol(),
-            Favorites(),
+          children: [
+            const Scrol(),
+            Favorites(key: ValueKey(_selectedIndex)),
           ],
         ));
   }

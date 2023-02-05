@@ -82,9 +82,8 @@ class _ChooseLocationState extends State<Favorites> {
 
     List favoriteItems = favorites.map((f) => json.decode(f)).toList();
 
-    Map<String, dynamic> newItem = {'id': indexImage, 'link': item};
-    bool exists =
-        favoriteItems.any((f) => f['id'] == indexImage && f['link'] == item);
+    Map<String, dynamic> newItem = {'link': item};
+    bool exists = favoriteItems.any((f) => f['link'] == item);
 
     if (!exists) {
       favoriteItems.add(newItem);
@@ -137,11 +136,10 @@ class _ChooseLocationState extends State<Favorites> {
                   itemBuilder: (context, index) {
                     int indexImage = index;
                     String link = '';
-
+                    print(_favorites);
                     if (_favorites.isNotEmpty) {
                       Map<String, dynamic> item =
                           json.decode(_favorites[index]);
-                      indexImage = item['id'];
                       link = item['link'];
                     }
                     return Padding(
@@ -156,13 +154,13 @@ class _ChooseLocationState extends State<Favorites> {
                                       context,
                                       CupertinoPageRoute(
                                           builder: (context) =>
-                                              Favorite(context, indexImage))),
+                                              Favorite(context, link, index))),
                                 },
                             child: SizedBox(
                                 height: 200,
                                 child: Stack(children: <Widget>[
                                   Hero(
-                                    tag: imageListLink[indexImage],
+                                    tag: '$link$index',
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(25),
                                       child: CachedNetworkImage(

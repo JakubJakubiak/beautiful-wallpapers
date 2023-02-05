@@ -18,24 +18,21 @@ export 'package:beautifulwallpapers/script/favorite.dart';
 
 class Favorite extends StatefulWidget {
   final BuildContext context;
-  final int indexImage;
+  final String link;
+  final int index;
 
   Favorite(
     this.context,
-    this.indexImage,
+    this.link,
+    this.index,
   ) : super(key: UniqueKey());
 
   @override
-  createState() => _ChooseLocationState(indexImage: indexImage);
+  createState() => _ChooseLocationState();
 }
 
 class _ChooseLocationState extends State<Favorite> {
   List<dynamic> _favorites = [];
-
-  int indexImage = 0;
-
-  _ChooseLocationState({required this.indexImage});
-  String url = '';
 
   String _wallpaperUrlHome = 'Unknown';
   String _wallpaperUrlLock = 'Unknown';
@@ -43,6 +40,9 @@ class _ChooseLocationState extends State<Favorite> {
 
   late bool goToHome;
   late SharedPreferences prefs;
+
+  String get urlBig => '${widget.link}grid_0.png';
+  String get urlLite => '${widget.link}grid_0_640_N.webp';
 
   @override
   void initState() {
@@ -56,8 +56,7 @@ class _ChooseLocationState extends State<Favorite> {
         .then((prefs) => prefs.getStringList('favorites') ?? []);
 
     List favoriteItems = favorites.map((f) => json.decode(f)).toList();
-    bool isInFavorites =
-        favoriteItems.any((f) => f['link'] == imageListLink[indexImage]);
+    bool isInFavorites = favoriteItems.any((f) => f['link'] == widget.link);
 
     setState(() {
       _favorites = favoriteItems;
@@ -65,15 +64,14 @@ class _ChooseLocationState extends State<Favorite> {
     });
   }
 
-  Future<void> _addToFavorites(String item, int indexImage) async {
+  Future<void> _addToFavorites(String link) async {
     List<String> favorites = await SharedPreferences.getInstance()
         .then((prefs) => prefs.getStringList('favorites') ?? []);
 
     List favoriteItems = favorites.map((f) => json.decode(f)).toList();
 
-    Map<String, dynamic> newItem = {'id': indexImage, 'link': item};
-    bool exists =
-        favoriteItems.any((f) => f['id'] == indexImage && f['link'] == item);
+    Map<String, dynamic> newItem = {'link': link};
+    bool exists = favoriteItems.any((f) => f['link'] == link);
 
     if (!exists) {
       favoriteItems.add(newItem);
@@ -88,18 +86,15 @@ class _ChooseLocationState extends State<Favorite> {
     });
   }
 
-  Future<void> setWallpaperHome(int index) async {
+  Future<void> setWallpaperHome(String link) async {
     setState(() {
-      indexImage = index;
-      url = '${imageListLink[indexImage]}grid_0.png';
-
       _wallpaperUrlHome = 'Loading';
     });
     String result;
 
     try {
       result = await AsyncWallpaper.setWallpaper(
-        url: url,
+        url: urlBig,
         wallpaperLocation: AsyncWallpaper.HOME_SCREEN,
         goToHome: goToHome,
       )
@@ -116,17 +111,15 @@ class _ChooseLocationState extends State<Favorite> {
     });
   }
 
-  Future<void> setWallpaperLock(index) async {
+  Future<void> setWallpaperLock(link) async {
     setState(() {
-      indexImage = index;
-      url = '${imageListLink[indexImage]}grid_0.png';
       _wallpaperUrlLock = 'Loading';
     });
     String result;
 
     try {
       result = await AsyncWallpaper.setWallpaper(
-        url: url,
+        url: urlBig,
         wallpaperLocation: AsyncWallpaper.LOCK_SCREEN,
         goToHome: goToHome,
       )
@@ -162,12 +155,11 @@ class _ChooseLocationState extends State<Favorite> {
                       child: Stack(
                         children: [
                           Hero(
-                            tag: imageListLink[indexImage],
+                            tag: '${widget.link}${widget.index}',
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(25),
                               child: CachedNetworkImage(
-                                  imageUrl:
-                                      '${imageListLink[indexImage]}grid_0_640_N.webp',
+                                  imageUrl: '${widget.link}grid_0_640_N.webp',
                                   width: MediaQuery.of(context).size.width,
                                   height: MediaQuery.of(context).size.height,
                                   fit: BoxFit.cover,
@@ -189,7 +181,7 @@ class _ChooseLocationState extends State<Favorite> {
                                       ? ElevatedButton(
                                           onPressed: () async {
                                             HapticFeedback.mediumImpact();
-                                            setWallpaperHome(indexImage);
+                                            setWallpaperHome(widget.link);
                                           },
                                           child: const Icon(
                                             Icons.fit_screen,
@@ -203,7 +195,7 @@ class _ChooseLocationState extends State<Favorite> {
                                       ? ElevatedButton(
                                           onPressed: () async {
                                             HapticFeedback.mediumImpact();
-                                            setWallpaperLock(indexImage);
+                                            setWallpaperLock(widget.link);
                                           },
                                           child: const Icon(
                                             Icons.screen_lock_landscape,
@@ -218,8 +210,7 @@ class _ChooseLocationState extends State<Favorite> {
                                           onTap: () async {
                                             HapticFeedback.mediumImpact();
                                             Utils.removeFromFavorites(
-                                                imageListLink[indexImage],
-                                                indexImage);
+                                                widget.link);
                                           },
                                           child: const Icon(
                                             Icons.favorite,
@@ -231,9 +222,7 @@ class _ChooseLocationState extends State<Favorite> {
                                       : GestureDetector(
                                           onTap: () async {
                                             HapticFeedback.mediumImpact();
-                                            _addToFavorites(
-                                                imageListLink[indexImage],
-                                                indexImage);
+                                            _addToFavorites(widget.link);
                                           },
                                           child: const Icon(
                                             Icons.favorite_border,

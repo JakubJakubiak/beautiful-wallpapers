@@ -63,11 +63,9 @@ class _ChooseLocationState extends State<Scrol> {
     });
   }
 
-  Future<void> setWallpaperHome(int index) async {
+  Future<void> setWallpaperHome(String link) async {
     setState(() {
-      indexImage = index;
-      url = '${imageListLink[indexImage]}grid_0.png';
-
+      url = '${link}grid_0.png';
       _wallpaperUrlHome = 'Loading';
     });
     String result;
@@ -91,10 +89,9 @@ class _ChooseLocationState extends State<Scrol> {
     });
   }
 
-  Future<void> setWallpaperLock(index) async {
+  Future<void> setWallpaperLock(link) async {
     setState(() {
-      indexImage = index;
-      url = '${imageListLink[indexImage]}grid_0.png';
+      url = '${link}grid_0.png';
       _wallpaperUrlLock = 'Loading';
     });
     String result;
@@ -129,8 +126,8 @@ class _ChooseLocationState extends State<Scrol> {
                 controller: _controller,
                 itemCount: imageListLink.length,
                 itemBuilder: (context, index) {
-                  int indexImage = index;
-
+                  String link = imageListLink[index];
+                  print('$link$index');
                   return Padding(
                       padding: const EdgeInsets.only(top: 20),
                       child: Card(
@@ -138,27 +135,22 @@ class _ChooseLocationState extends State<Scrol> {
                         GestureDetector(
                             onTap: () => {
                                   HapticFeedback.mediumImpact(),
-                                  indexImage = index,
-                                  url =
-                                      '${imageListLink[indexImage]}grid_0_640_N.webp',
+                                  url = '${link}grid_0_640_N.webp',
                                   Navigator.push(
                                       context,
                                       CupertinoPageRoute(
-                                          builder: (context) => Favorite(
-                                                context,
-                                                indexImage,
-                                              )))
+                                          builder: (context) =>
+                                              Favorite(context, link, index)))
                                 },
                             child: SizedBox(
                                 child: Stack(
                               children: <Widget>[
                                 Hero(
-                                  tag: imageListLink[indexImage],
+                                  tag: '$link$index',
                                   child: ClipRRect(
                                       borderRadius: BorderRadius.circular(25),
                                       child: CachedNetworkImage(
-                                        imageUrl:
-                                            '${imageListLink[indexImage]}grid_0_640_N.webp',
+                                        imageUrl: '${link}grid_0_640_N.webp',
                                         width:
                                             MediaQuery.of(context).size.width,
                                         height: 400,
@@ -172,7 +164,7 @@ class _ChooseLocationState extends State<Scrol> {
                                       ? ElevatedButton(
                                           onPressed: () async {
                                             HapticFeedback.mediumImpact();
-                                            setWallpaperHome(index);
+                                            setWallpaperHome(link);
                                           },
                                           child: const Icon(
                                             Icons.fit_screen,
@@ -185,7 +177,7 @@ class _ChooseLocationState extends State<Scrol> {
                                       ? ElevatedButton(
                                           onPressed: () async {
                                             HapticFeedback.mediumImpact();
-                                            setWallpaperLock(index);
+                                            setWallpaperLock(link);
                                           },
                                           child: const Icon(
                                             Icons.screen_lock_landscape,
