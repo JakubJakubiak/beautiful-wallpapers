@@ -181,7 +181,8 @@ class _ChooseLocationState extends State<Favorite> {
                                       ? ElevatedButton(
                                           onPressed: () async {
                                             HapticFeedback.mediumImpact();
-                                            setWallpaperHome(widget.link);
+                                            if (_wallpaperUrlLock != 'Loading')
+                                              setWallpaperHome(widget.link);
                                           },
                                           child: const Icon(
                                             Icons.fit_screen,
@@ -195,7 +196,8 @@ class _ChooseLocationState extends State<Favorite> {
                                       ? ElevatedButton(
                                           onPressed: () async {
                                             HapticFeedback.mediumImpact();
-                                            setWallpaperLock(widget.link);
+                                            if (_wallpaperUrlHome != 'Loading')
+                                              setWallpaperLock(widget.link);
                                           },
                                           child: const Icon(
                                             Icons.screen_lock_landscape,

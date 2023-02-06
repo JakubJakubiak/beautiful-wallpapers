@@ -49,9 +49,9 @@ class _ChooseLocationState extends State<Favorites> {
     });
   }
 
-  Future<void> setWallpaperHome(int indexImage) async {
+  Future<void> setWallpaperHome(String link) async {
     setState(() {
-      url = '${imageListLink[indexImage]}grid_0.png';
+      url = '${link}grid_0.png';
 
       _wallpaperUrlHome = 'Loading';
     });
@@ -76,32 +76,9 @@ class _ChooseLocationState extends State<Favorites> {
     });
   }
 
-  Future<void> _addToFavorites(String item, int indexImage) async {
-    List<String> favorites = await SharedPreferences.getInstance()
-        .then((prefs) => prefs.getStringList('favorites') ?? []);
-
-    List favoriteItems = favorites.map((f) => json.decode(f)).toList();
-
-    Map<String, dynamic> newItem = {'link': item};
-    bool exists = favoriteItems.any((f) => f['link'] == item);
-
-    if (!exists) {
-      favoriteItems.add(newItem);
-
-      favorites = favoriteItems.map((f) => json.encode(f)).toList();
-      await SharedPreferences.getInstance()
-          .then((prefs) => prefs.setStringList('favorites', favorites));
-    }
-
+  Future<void> setWallpaperLock(String link) async {
     setState(() {
-      _favorites = favoriteItems;
-      print(_favorites);
-    });
-  }
-
-  Future<void> setWallpaperLock(int indexImage) async {
-    setState(() {
-      url = '${imageListLink[indexImage]}grid_0.png';
+      url = '${link}grid_0.png';
       _wallpaperUrlLock = 'Loading';
     });
     String result;
@@ -125,6 +102,28 @@ class _ChooseLocationState extends State<Favorites> {
     });
   }
 
+  Future<void> _addToFavorites(String link) async {
+    List<String> favorites = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getStringList('favorites') ?? []);
+
+    List favoriteItems = favorites.map((f) => json.decode(f)).toList();
+
+    Map<String, dynamic> newItem = {'link': link};
+    bool exists = favoriteItems.any((f) => f['link'] == link);
+
+    if (!exists) {
+      favoriteItems.add(newItem);
+
+      favorites = favoriteItems.map((f) => json.encode(f)).toList();
+      await SharedPreferences.getInstance()
+          .then((prefs) => prefs.setStringList('favorites', favorites));
+    }
+
+    setState(() {
+      _favorites = favoriteItems;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,7 +133,6 @@ class _ChooseLocationState extends State<Favorites> {
               ListView.builder(
                   itemCount: _favorites.length,
                   itemBuilder: (context, index) {
-                    int indexImage = index;
                     String link = '';
                     if (_favorites.isNotEmpty) {
                       Map<String, dynamic> item =
@@ -182,7 +180,9 @@ class _ChooseLocationState extends State<Favorites> {
                                         ? ElevatedButton(
                                             onPressed: () async {
                                               HapticFeedback.mediumImpact();
-                                              setWallpaperHome(indexImage);
+                                              if (_wallpaperUrlLock !=
+                                                  'Loading')
+                                                setWallpaperHome(link);
                                             },
                                             child: const Icon(
                                               Icons.fit_screen,
@@ -195,7 +195,9 @@ class _ChooseLocationState extends State<Favorites> {
                                         ? ElevatedButton(
                                             onPressed: () async {
                                               HapticFeedback.mediumImpact();
-                                              setWallpaperLock(indexImage);
+                                              if (_wallpaperUrlHome !=
+                                                  'Loading')
+                                                setWallpaperLock(link);
                                             },
                                             child: const Icon(
                                               Icons.screen_lock_landscape,
